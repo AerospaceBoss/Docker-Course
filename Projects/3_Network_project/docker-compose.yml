@@ -1,0 +1,37 @@
+name: omar_app
+
+services:
+  mysql_container:
+    image: mysql_image
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: DockerDB
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p1234"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    networks:
+      - omar_network
+
+  flask_container:
+    image: flask_image_ui
+    ports:
+      - "5000:5000"
+    depends_on:
+      mysql_container:
+        condition: service_healthy
+    networks:
+      - omar_network
+
+volumes:
+  mysql_data:
+
+networks:
+  omar_network:
+    external: true
